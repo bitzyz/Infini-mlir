@@ -61,9 +61,10 @@ def Infini_InputOp: Infini_BaseOp<"Input"> {
 
 // InfiniOp
 class Infini_Op<string mnemonic, list<Trait> traits = []> :
-    Infini_BaseOp<mnemonic, [DeclareOpInterfaceMethods<ShapeInterface>]>;
+    Infini_BaseOp<mnemonic, !listconcat(traits,
+       [DeclareOpInterfaceMethods<ShapeInterface>])>;
 
-def Infini_AddOp: Infini_Op<"Add", [SupportFuseRelu, SupportConstant, ScalarProducer, ScalarConsumer]> {
+def Infini_AddOp: Infini_Op<"Add", [SupportFuseRelu]> {
   let summary = "Add operation";
 
   let description = [{
@@ -90,7 +91,8 @@ def Infini_BatchNormOp: Infini_Op<"BatchNorm", [SupportFuseRelu]> {
     AnyTensor:$variance,
     AnyTensorOrNone:$gamma,
     AnyTensorOrNone:$beta,
-    DefaultValuedAttr<F32Attr, "1e-05">:$epsilon
+    DefaultValuedAttr<F32Attr, "1e-05">:$epsilon,
+    DefaultValuedAttr<BoolAttr, "false">:$do_relu
   );
   let results = (outs AnyTensor:$output);
   // let hasCanonicalizer = 1;
@@ -193,7 +195,7 @@ def Infini_ReluOp: Infini_Op<"Relu"> {
 
   let results = (outs AnyTensor:$output);
 
-  // let hasCanonicalizer = 1;
+  let hasCanonicalizer = 1;
 }
 
 def Infini_ReshapeOp:Infini_Op<"Reshape"> {

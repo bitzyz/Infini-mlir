@@ -23,6 +23,8 @@ using mlir::func::CallOp;
 using mlir::Operation;
 using mlir::ArrayAttr;
 
+extern std::unordered_map<std::string, int> patternMatchCounts;
+
 Type getElementType(Value v);
 llvm::ArrayRef<int64_t> getShape(Value v);
 bool isUnranked(Value v);

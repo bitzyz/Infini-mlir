@@ -44,6 +44,7 @@ using mlir::IntegerAttr;
 
 // static MLIRContext *ctx = nullptr;
 // static ModuleOp m = nullptr;
+std::unordered_map<std::string, int> patternMatchCounts;
 
 struct Attr {
   static constexpr llvm::StringRef WEIGHT_FILE = "module.weight_file";

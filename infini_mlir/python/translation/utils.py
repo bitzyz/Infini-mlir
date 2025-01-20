@@ -34,6 +34,7 @@ def str2list(v):
 
 def infini_opt_options():
     options = ["--shape-infer"]
+    options.extend(["--canonicalize"])
     return options
 
 def _os_system(cmd: list):

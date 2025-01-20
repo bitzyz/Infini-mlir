@@ -2,6 +2,7 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "InfiniOps.h"
 #include "Transforms/include/Passes.h"
+#include "mlir/Transforms/Passes.h"
 
 namespace infini {
 namespace infinimlir {
@@ -12,6 +13,7 @@ void registerAllDialects(mlir::DialectRegistry &registry) {
 
 void registerAllPasses() {
   registerPasses();
+  mlir::registerCanonicalizer();
 }
 
 
