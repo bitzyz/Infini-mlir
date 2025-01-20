@@ -12,6 +12,8 @@
 #include "mlir/Interfaces/InferTypeOpInterface.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 #include "mlir/Support/TypeID.h"
+#include "Traits.h"
+#include "ShapeInterface.h"
 
 #include "InfiniOpsDialect.h.inc"
 #define GET_OP_CLASSES

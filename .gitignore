@@ -44,5 +44,11 @@ build_debug/
 *.onnx
 *.pb
 *.npy
+*.npz
 
 *.swp
+
+# mlir
+*.mlir
+
+*.log

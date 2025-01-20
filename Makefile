@@ -44,6 +44,7 @@ endif
 
 build:
 	mkdir -p build/$(TYPE)
+	# mkdir -p 3rd-party/llvm-project/build
 	cd build/$(TYPE) && cmake $(CMAKE_OPT) ../.. && make -j64
 
 # clean:
