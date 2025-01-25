@@ -14,6 +14,7 @@
 #include "ModuleEnum.cpp.inc"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
+#include "TensorFile.h"
 
 namespace infini {
 namespace infinimlir {
@@ -41,10 +42,14 @@ using mlir::WalkOrder;
 using mlir::Operation;
 using mlir::ArrayAttr;
 using mlir::IntegerAttr;
-
+using mlir::NameLoc;
+using mlir::FusedLoc;
+using mlir::OpPrintingFlags;
+using mlir::StringAttr;
 // static MLIRContext *ctx = nullptr;
 // static ModuleOp m = nullptr;
 std::unordered_map<std::string, int> patternMatchCounts;
+static std::unique_ptr<mlir::TensorFile> wFile = nullptr;
 
 struct Attr {
   static constexpr llvm::StringRef WEIGHT_FILE = "module.weight_file";
@@ -206,6 +211,44 @@ std::shared_ptr<std::vector<ModuleOp>> getAllModules(ModuleOp module) {
     modules->assign(sub.begin(), sub.end());
   }
   return modules;
+}
+
+StringRef getName(Operation *op, int index) {
+  if (auto module = dyn_cast<ModuleOp>(op)) {
+    return module.getName().value_or("Unknown");
+  }
+  if (auto loc = op->getLoc().dyn_cast<NameLoc>()) {
+    return loc.getName();
+  }
+  if (auto loc = op->getLoc().dyn_cast<FusedLoc>()) {
+    auto locs = loc.getLocations();
+    assert(static_cast<size_t>(index) < locs.size());
+    if (auto name_loc = locs[index].dyn_cast<NameLoc>()) {
+      return name_loc.getName();
+    }
+  }
+  op->print(llvm::errs(), OpPrintingFlags().useLocalScope().enableDebugInfo());
+  llvm::errs() << "op has no name location!!!\n";
+  op->dump();
+  llvm_unreachable("op has no name location!!!");
+  return "";
+}
+
+Type getStorageType(Type type) {
+  if (type.isa<RankedTensorType>()) {
+    type = type.cast<RankedTensorType>().getElementType();
+  }
+  return type;
+}
+
+Type getStorageType(Value v) { return getStorageType(v.getType()); }
+
+mlir::TensorFile &weightFile(ModuleOp module) {
+  if (wFile == nullptr) {
+    auto name = module->getAttrOfType<StringAttr>(Attr::WEIGHT_FILE).getValue();
+    wFile = std::make_unique<mlir::TensorFile>(name, false);
+  }
+  return *wFile;
 }
 
 // void updateModuleTypes(ModuleOp module) {

@@ -6,6 +6,7 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "llvm/ADT/StringRef.h"
+#include "TensorFile.h"
 
 namespace infini {
 namespace infinimlir {
@@ -26,7 +27,12 @@ using mlir::ArrayAttr;
 extern std::unordered_map<std::string, int> patternMatchCounts;
 
 Type getElementType(Value v);
+Type getStorageType(Value v);
+Type getStorageType(Type type);
+
+mlir::TensorFile &weightFile(ModuleOp module);
 llvm::ArrayRef<int64_t> getShape(Value v);
+llvm::StringRef getName(Operation *op, int index = 0);
 bool isUnranked(Value v);
 void setShapeOrVerify(Value v, llvm::ArrayRef<int64_t> shape);
 

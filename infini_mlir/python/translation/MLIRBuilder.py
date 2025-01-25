@@ -121,7 +121,6 @@ class MLIRBuilder(object):
             if _shape != output_shape or _type != data_type:
                 raise RuntimeError("{} weight conflict".format(name))
             return _op
-        attrs = dict()
         tensor_type = RankedTensorType.get(output_shape, self.mlir_type[data_type])
         op = Operation.create("infini.Weight",
                               results=[tensor_type],
@@ -137,7 +136,7 @@ class MLIRBuilder(object):
         return return_op
 
     def print_module(self):
-        mlir_format = self.mlir_module.operation.get_asm(enable_debug_info=False)
+        mlir_format = self.mlir_module.operation.get_asm(enable_debug_info=True, use_local_scope=True)
         return mlir_format
 
     def declare_func(self, input_types: list = [], output_types: list = []):

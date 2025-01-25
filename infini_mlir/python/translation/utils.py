@@ -34,7 +34,7 @@ def str2list(v):
 
 def infini_opt_options():
     options = ["--shape-infer"]
-    options.extend(["--canonicalize"])
+    options.extend(["--canonicalize", "--mlir-print-debuginfo", "--mlir-print-local-scope"])
     return options
 
 def _os_system(cmd: list):
@@ -47,9 +47,8 @@ def _os_system(cmd: list):
     else:
         raise RuntimeError("[!Error]: {}".format(cmd_str))
 
-def mlir_opt(mlirfile: str,
-            opt_mlirfile: str):
-    cmd = ["infini-opt", mlirfile]
+def mlir_opt(mlirfile: str, opt_mlirfile: str):
+    cmd = ["../../../build/Release/infini_mlir/Tools/infini-opt", mlirfile]
     options = infini_opt_options()
     cmd.extend(options)
     cmd.extend(["-o", opt_mlirfile])

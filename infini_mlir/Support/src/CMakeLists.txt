@@ -10,4 +10,5 @@ add_llvm_library(INFINIMLIRSupport
   LINK_LIBS PUBLIC
   MLIRIR
   MLIRSupport
+  cnpy
 )

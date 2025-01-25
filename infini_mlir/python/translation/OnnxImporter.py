@@ -80,7 +80,8 @@ class OnnxImporter(BaseImporter):
                  input_shapes: list,
                  output_names: list,
                  dynamic_shape_input_names=[],
-                 dynamic=False):
+                 dynamic=False,
+                 opt=False):
         super().__init__()
 
         self.dynamic_shape_input_names = dynamic_shape_input_names

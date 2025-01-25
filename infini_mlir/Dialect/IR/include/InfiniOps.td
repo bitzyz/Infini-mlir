@@ -42,6 +42,11 @@ def Infini_WeightOp : Infini_BaseOp<"Weight"> {
 
   let results = (outs AnyRankedTensor:$output);
   // let hasCanonicalizer = 1;
+  let extraClassDeclaration = [{
+  template<typename T>
+  std::shared_ptr<std::vector<T>> read();
+  std::shared_ptr<std::vector<float>> read_as_float();
+  }];
 }
 
 def Infini_InputOp: Infini_BaseOp<"Input"> {

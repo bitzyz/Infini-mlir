@@ -3,6 +3,10 @@
 #include "operators/element_wise.h"
 #include "gtest/gtest.h"
 #include "test.h"
+#include "mlir/IR/MLIRContext.h"
+#include "mlir/Parser/Parser.h"
+#include "ConvertToInfini.h"
+#include "mlir/IR/BuiltinOps.h"
 
 namespace infini {
 namespace infinimlir {
@@ -24,6 +28,36 @@ TEST(Graph, coverttomlir) {
     g->print();
     g->optimize();
     g->print();
+}
+
+TEST(Graph, mlir2graph) {
+    mlir::MLIRContext context;
+    context.getOrLoadDialect<mlir::func::FuncDialect>();
+    context.getOrLoadDialect<infini::infinimlir::InfiniDialect>();
+    std::string filename = "../../infini_mlir/python/translation/output.mlir";
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Cannot open file: " << filename << std::endl;
+        return;
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+
+    auto moduleRef = mlir::parseSourceString(buffer.str(), &context);
+    if (!moduleRef) {
+        std::cerr << "Failed to parse MLIR module" << std::endl;
+        return;
+    }
+
+    auto module = moduleRef->clone();
+    mlir::ModuleOp moduleOp = llvm::cast<mlir::ModuleOp>(module);
+    moduleOp.dump();
+
+    Runtime runtime = NativeCpuRuntimeObj::getInstance();
+    Graph g = make_ref<GraphObj>(runtime);
+    Graph new_graph = convertMLIRToInfini(moduleOp, g->getRuntime());
+    new_graph->print();
 }
 
 } // namespace infinimlir

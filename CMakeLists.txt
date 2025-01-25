@@ -96,6 +96,9 @@ include_directories(3rd-party/pybind11/include)
 add_subdirectory(3rd-party/nlohmann_json_cmake_fetchcontent)
 include_directories(3rd-party/nlohmann_json_cmake_fetchcontent/single_include)
 
+# cnpy
+add_subdirectory(3rd-party/cnpy)
+include_directories(3rd-party/cnpy)
 
 # TVM backend
 if(BUILD_NNET AND BUILD_TEST)

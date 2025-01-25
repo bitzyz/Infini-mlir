@@ -16,3 +16,7 @@
 [submodule "3rd-party/llvm-project"]
 	path = 3rd-party/llvm-project
 	url = git@github.com:llvm/llvm-project.git
+
+[submodule "3rd-party/cnpy"]
+	path = 3rd-party/cnpy
+	url = git@github.com:rogersce/cnpy.git
