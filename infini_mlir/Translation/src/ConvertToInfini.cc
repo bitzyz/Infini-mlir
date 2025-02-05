@@ -183,7 +183,7 @@ void handleConvOp(Graph &g, mlir::Operation *op,
     tensorMap[output] = output_tensor;
     
     // 获取Conv参数
-    auto kernelShape = convOp.getKernelShape();
+    // auto kernelShape = convOp.getKernelShape();
     auto strides = convOp.getStrides();
     auto paddings = convOp.getPads();
     auto dilations = convOp.getDilations();
@@ -191,18 +191,19 @@ void handleConvOp(Graph &g, mlir::Operation *op,
     auto stridesArr = strides.getValue();
     auto paddingsArr = paddings.getValue();
     auto dilationsArr = dilations.has_value() ? 
-        dilations.getValue() : 
+        dilations.value() : 
         mlir::ArrayAttr::get(op->getContext(), {
             mlir::IntegerAttr::get(mlir::IntegerType::get(op->getContext(), 64), 1),
             mlir::IntegerAttr::get(mlir::IntegerType::get(op->getContext(), 64), 1)
         });
 
     // 创建Conv算子
-    g->addOpWithOutputs<ConvObj>(input, weight, output_tensor,
-                            stridesArr[0].cast<IntegerAttr>().getInt(),
-                            stridesArr[1].cast<IntegerAttr>().getInt(),
+    g->addOpWithOutputs<ConvObj>(
+                            input, weight, output_tensor,
                             paddingsArr[0].cast<IntegerAttr>().getInt(),
                             paddingsArr[1].cast<IntegerAttr>().getInt(),
+                            stridesArr[0].cast<IntegerAttr>().getInt(),
+                            stridesArr[1].cast<IntegerAttr>().getInt(),
                             dilationsArr[0].cast<IntegerAttr>().getInt(),
                             dilationsArr[1].cast<IntegerAttr>().getInt());
 }
@@ -215,7 +216,7 @@ void handleMaxPoolOp(Graph &g, mlir::Operation *op,
     auto poolOp = llvm::cast<infinimlir::MaxPoolOp>(op);
     
     // 获取输入tensor
-    Tensor input = tensorMap[poolOp.getOperand(0)];
+    Tensor input = tensorMap[poolOp.getOperand()];
     
     // 创建输出tensor
     mlir::Value output = poolOp.getResult();
@@ -231,16 +232,20 @@ void handleMaxPoolOp(Graph &g, mlir::Operation *op,
     auto strides = poolOp.getStrides();
     auto paddings = poolOp.getPads();
     
+    auto kernelShapeArr = kernelShape.getValue();
+    auto stridesArr = strides.getValue();
+    auto paddingsArr = paddings.getValue();
+    int ceilMode = poolOp.getCeilMode().has_value() ? (poolOp.getCeilMode().value() ? 1 : 0) : 0;
     // 创建MaxPool算子
     g->addOpWithOutputs<MaxPoolObj>(input, output_tensor,
-                                   static_cast<int>(kernelShape[0]),
-                                   static_cast<int>(kernelShape[1]),
-                                   0, 0,
-                                   static_cast<int>(paddings[0]),
-                                   static_cast<int>(paddings[1]),
-                                   static_cast<int>(strides[0]),
-                                   static_cast<int>(strides[1]),
-                                   poolOp.getCeilMode());
+                                   kernelShapeArr[0].cast<IntegerAttr>().getInt(),
+                                   kernelShapeArr[1].cast<IntegerAttr>().getInt(),
+                                   1, 1,
+                                   paddingsArr[0].cast<IntegerAttr>().getInt(),
+                                   paddingsArr[1].cast<IntegerAttr>().getInt(),
+                                   stridesArr[0].cast<IntegerAttr>().getInt(),
+                                   stridesArr[1].cast<IntegerAttr>().getInt(),
+                                   ceilMode);
 }
 
 void handleAvgPoolOp(Graph &g, mlir::Operation *op,
@@ -248,7 +253,7 @@ void handleAvgPoolOp(Graph &g, mlir::Operation *op,
     auto poolOp = llvm::cast<infinimlir::AvgPoolOp>(op);
     
     // 获取输入tensor
-    Tensor input = tensorMap[poolOp.getOperand(0)];
+    Tensor input = tensorMap[poolOp.getOperand()];
     
     // 创建输出tensor
     mlir::Value output = poolOp.getResult();
@@ -263,17 +268,20 @@ void handleAvgPoolOp(Graph &g, mlir::Operation *op,
     auto kernelShape = poolOp.getKernelShape();
     auto strides = poolOp.getStrides();
     auto paddings = poolOp.getPads();
-    
+
+    auto kernelShapeArr = kernelShape.getValue();
+    auto stridesArr = strides.getValue();
+    auto paddingsArr = paddings.getValue();
     // 创建AvgPool算子
     g->addOpWithOutputs<AvgPoolObj>(input, output_tensor,
-                                   static_cast<int>(kernelShape[0]),
-                                   static_cast<int>(kernelShape[1]),
-                                   0, 0,
-                                   static_cast<int>(paddings[0]),
-                                   static_cast<int>(paddings[1]),
-                                   static_cast<int>(strides[0]),
-                                   static_cast<int>(strides[1]),
-                                   false);
+                                   kernelShapeArr[0].cast<IntegerAttr>().getInt(),
+                                   kernelShapeArr[1].cast<IntegerAttr>().getInt(),
+                                   1, 1,
+                                   paddingsArr[0].cast<IntegerAttr>().getInt(),
+                                   paddingsArr[1].cast<IntegerAttr>().getInt(),
+                                   stridesArr[0].cast<IntegerAttr>().getInt(),
+                                   stridesArr[1].cast<IntegerAttr>().getInt(),
+                                   0);
 }
 
 void handleReshapeOp(Graph &g, mlir::Operation *op,
@@ -281,7 +289,7 @@ void handleReshapeOp(Graph &g, mlir::Operation *op,
     auto reshapeOp = llvm::cast<infinimlir::ReshapeOp>(op);
     
     // 获取输入tensor
-    Tensor input = tensorMap[reshapeOp.getOperand(0)];
+    Tensor input = tensorMap[reshapeOp.getOperand()];
     
     // 创建输出tensor
     mlir::Value output = reshapeOp.getResult();
@@ -293,7 +301,14 @@ void handleReshapeOp(Graph &g, mlir::Operation *op,
     tensorMap[output] = output_tensor;
     
     // 创建Reshape算子
-    g->addOpWithOutputs<ReshapeObj>(input, output_tensor, int64t_to_int(reshapeOp.getShape()));
+    std::vector<int64_t> newShape;
+    if (auto shapeAttr = reshapeOp.getShape()) {
+        // shape属性存在
+        for (auto attr : shapeAttr.value()) {
+            newShape.push_back(attr.cast<mlir::IntegerAttr>().getInt());
+        }
+    }
+    g->addOpWithOutputs<ReshapeObj>(input, output_tensor, int64t_to_int(newShape));
 }
 void handleMatMulOp(Graph &g, mlir::Operation *op,
                  llvm::DenseMap<mlir::Value, Tensor> &tensorMap) {
