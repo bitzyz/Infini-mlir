@@ -42,15 +42,31 @@ ifeq ($(INTELCPU), ON)
 	CMAKE_OPT += -DUSE_INTELCPU=ON -DCMAKE_CXX_COMPILER=dpcpp
 endif
 
-build:
+build: build-llvm
 	mkdir -p build/$(TYPE)
-	# mkdir -p 3rd-party/llvm-project/build
 	cd build/$(TYPE) && cmake $(CMAKE_OPT) ../.. && make -j64
 
-# clean:
-# 	rm -rf build 3rd-party/llvm-project/build
+# LLVM build target
+build-llvm:
+	mkdir -p 3rd-party/llvm-project/build
+	cd 3rd-party/llvm-project/build && \
+	cmake -G Ninja ../llvm \
+		-DLLVM_ENABLE_PROJECTS=mlir \
+		-DLLVM_BUILD_EXAMPLES=OFF \
+		-DLLVM_TARGETS_TO_BUILD=host \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DLLVM_ENABLE_ASSERTIONS=ON \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DLLVM_CCACHE_BUILD=OFF \
+		-DMLIR_ENABLE_BINDINGS_PYTHON=ON && \
+	ninja -j64
+            
+
+
 clean:
-	rm -rf build
+	rm -rf build 3rd-party/llvm-project/build
+# clean:
+# 	rm -rf build
 
 format:
 	@python3 scripts/format.py $(FORMAT_ORIGIN)

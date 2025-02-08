@@ -131,8 +131,8 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -UNDEBUG")
 
 
 # LLVM & MLIR
-set(LLVM_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/llvm-project")
-set(LLVM_BUILD_DIR "${LLVM_SOURCE_DIR}/build")
+# set(LLVM_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/llvm-project")
+# set(LLVM_BUILD_DIR "${LLVM_SOURCE_DIR}/build")
 # set(LLVM_INSTALL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/llvm-install")
 # ExternalProject_Add(  
 #     llvm-project-config  
@@ -154,19 +154,19 @@ set(LLVM_BUILD_DIR "${LLVM_SOURCE_DIR}/build")
 #     INSTALL_COMMAND ""
 # )  
 
-# configure LLVM
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -G Ninja ${LLVM_SOURCE_DIR}/llvm
-            -DLLVM_ENABLE_PROJECTS=mlir
-            -DLLVM_BUILD_EXAMPLES=OFF
-            -DLLVM_TARGETS_TO_BUILD=host
-            -DCMAKE_BUILD_TYPE=Release
-            -DLLVM_ENABLE_ASSERTIONS=ON
-            -DLLVM_ENABLE_RTTI=ON  
-            -DLLVM_CCACHE_BUILD=OFF  
-            -DMLIR_ENABLE_BINDINGS_PYTHON=ON
-    WORKING_DIRECTORY ${LLVM_BUILD_DIR}
-)
+# # configure LLVM
+# execute_process(
+#     COMMAND ${CMAKE_COMMAND} -G Ninja ${LLVM_SOURCE_DIR}/llvm
+#             -DLLVM_ENABLE_PROJECTS=mlir
+#             -DLLVM_BUILD_EXAMPLES=OFF
+#             -DLLVM_TARGETS_TO_BUILD=host
+#             -DCMAKE_BUILD_TYPE=Release
+#             -DLLVM_ENABLE_ASSERTIONS=ON
+#             -DLLVM_ENABLE_RTTI=ON  
+#             -DLLVM_CCACHE_BUILD=OFF  
+#             -DMLIR_ENABLE_BINDINGS_PYTHON=ON
+#     WORKING_DIRECTORY ${LLVM_BUILD_DIR}
+# )
 
 # set LLVM_DIR
 set(LLVM_DIR ${PROJECT_SOURCE_DIR}/3rd-party/llvm-project/build/lib/cmake/llvm)
@@ -175,14 +175,14 @@ set(MLIR_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/3rd-party/llvm-project/mlir/include)
 list(APPEND CMAKE_MODULE_PATH "${MLIR_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${LLVM_DIR}")
 
-ExternalProject_Add(
-    llvm-project-build
-    SOURCE_DIR "${LLVM_SOURCE_DIR}" 
-    BINARY_DIR "${LLVM_BUILD_DIR}" 
-    CONFIGURE_COMMAND "" 
-    BUILD_COMMAND ninja 
-    INSTALL_COMMAND "" 
-)
+# ExternalProject_Add(
+#     llvm-project-build
+#     SOURCE_DIR "${LLVM_SOURCE_DIR}" 
+#     BINARY_DIR "${LLVM_BUILD_DIR}" 
+#     CONFIGURE_COMMAND "" 
+#     BUILD_COMMAND ninja 
+#     INSTALL_COMMAND "" 
+# )
 
 # find LLVM and MLIR
 find_package(LLVM REQUIRED CONFIG)
