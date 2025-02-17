@@ -49,3 +49,10 @@ add_mlir_python_modules(INFINIMLIRPythonModules
   COMMON_CAPI_LINK_LIBS
     INFINIMLIRPythonCAPI
 )
+
+add_custom_command(
+  TARGET INFINIMLIRPythonModules POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E touch 
+    "${CMAKE_BINARY_DIR}/python/mlir/__init__.py"
+  COMMENT "Creating __init__.py files"
+)
